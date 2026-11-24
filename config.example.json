@@ -1,0 +1,7 @@
+{
+  "organization": "YOUR_ORGANIZATION",
+  "app_id": "YOUR_APP_ID",
+  "client_id": "YOUR_CLIENT_ID",
+  "installation_id": "YOUR_INSTALLATION_ID",
+  "private_key_path": "~/.config/compliance/app.pem"
+}

@@ -1,0 +1,62 @@
+schema_version: "1.0"
+
+name: GitHub Organization Security Baseline
+description: Security baseline for GitHub organizations
+
+controls:
+
+  - id: SEC-004-01
+    control: SEC-004
+    name: Mandatory MFA
+    source: organization
+    field: two_factor_requirement_enabled
+    expected: true
+    severity: critical
+
+  - id: SEC-005-01
+    control: SEC-005
+    name: Default repository permission
+    source: organization
+    field: default_repository_permission
+    expected: none
+    severity: high
+
+  - id: SEC-005-02
+    control: SEC-005
+    name: Private repository forking
+    source: organization
+    field: members_can_fork_private_repositories
+    expected: false
+    severity: high
+
+  - id: SEC-007-01
+    control: SEC-007
+    name: Trusted Actions policy
+    source: actions
+    field: allowed_actions
+    expected: selected
+    severity: high
+
+  - id: SEC-007-02
+    control: SEC-007
+    name: Read-only workflow permissions
+    source: workflow
+    field: default_workflow_permissions
+    expected: read
+    severity: high
+
+  - id: SEC-007-03
+    control: SEC-007
+    name: Automated PR approval disabled
+    source: workflow
+    field: can_approve_pull_request_reviews
+    expected: false
+    severity: high
+
+  - id: SEC-005-03
+    control: SEC-005
+    name: Outside collaborator invitations restricted
+    source: organization
+    field: members_can_invite_outside_collaborators
+    expected: false
+    severity: high
