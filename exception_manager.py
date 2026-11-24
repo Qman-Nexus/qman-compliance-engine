@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
@@ -16,7 +16,7 @@ def load_exceptions(path):
         registry = yaml.safe_load(file)
 
     if not isinstance(registry, dict):
-        raise ValueError("Invalid exception registry")
+        raise TypeError("Invalid exception registry")
 
     if registry.get("schema_version") != "1.0":
         raise ValueError("Unsupported exception schema")
@@ -24,21 +24,15 @@ def load_exceptions(path):
     exceptions = registry.get("exceptions")
 
     if not isinstance(exceptions, list):
-        raise ValueError("Invalid exceptions list")
+        raise TypeError("Invalid exceptions list")
 
     return exceptions
 
 
-def apply_exceptions(
-    results,
-    exceptions,
-    organization,
-    plan,
-    today=None
-):
+def apply_exceptions(results, exceptions, organization, plan, today=None):
     """Apply approved and valid risk exceptions."""
 
-    today = today or datetime.now(timezone.utc).date()
+    today = today or datetime.now(UTC).date()
     evaluated = []
 
     for result in results:
@@ -49,7 +43,6 @@ def apply_exceptions(
             continue
 
         for exception in exceptions:
-
             if exception["control_id"] != result["id"]:
                 continue
 
@@ -65,15 +58,9 @@ def apply_exceptions(
             if not exception.get("compensating_controls"):
                 continue
 
-            created = datetime.strptime(
-                exception["created_at"],
-                "%Y-%m-%d"
-            ).date()
+            created = datetime.strptime(exception["created_at"], "%Y-%m-%d").date()
 
-            expires = datetime.strptime(
-                exception["expires_at"],
-                "%Y-%m-%d"
-            ).date()
+            expires = datetime.strptime(exception["expires_at"], "%Y-%m-%d").date()
 
             if not created <= today < expires:
                 continue
@@ -86,10 +73,7 @@ def apply_exceptions(
             actual = result["actual"]
             expected_actual = conditions["actual"]
 
-            if (
-                type(actual) is not type(expected_actual)
-                or actual != expected_actual
-            ):
+            if type(actual) is not type(expected_actual) or actual != expected_actual:
                 continue
 
             result["original_status"] = "FAIL"
@@ -100,7 +84,7 @@ def apply_exceptions(
                 "reason": exception["reason"],
                 "owner": exception["owner"],
                 "approved_by": exception["approved_by"],
-                "expires_at": exception["expires_at"]
+                "expires_at": exception["expires_at"],
             }
 
             break

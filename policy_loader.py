@@ -10,7 +10,7 @@ def load_policy(path):
         policy = yaml.safe_load(file)
 
     if not isinstance(policy, dict):
-        raise ValueError("Invalid policy format")
+        raise TypeError("Invalid policy format")
 
     if policy.get("schema_version") != "1.0":
         raise ValueError("Unsupported policy schema")
@@ -27,27 +27,18 @@ def load_policy(path):
         "source",
         "field",
         "expected",
-        "severity"
+        "severity",
     }
 
-    allowed_sources = {
-        "organization",
-        "actions",
-        "workflow"
-    }
+    allowed_sources = {"organization", "actions", "workflow"}
 
-    allowed_severities = {
-        "critical",
-        "high",
-        "medium",
-        "low"
-    }
+    allowed_severities = {"critical", "high", "medium", "low"}
 
     seen_ids = set()
 
     for control in controls:
         if not isinstance(control, dict):
-            raise ValueError("Invalid control")
+            raise TypeError("Invalid control")
 
         if not required_fields.issubset(control):
             raise ValueError("Missing required fields")
@@ -64,4 +55,3 @@ def load_policy(path):
         seen_ids.add(control["id"])
 
     return policy
-

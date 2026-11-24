@@ -26,13 +26,52 @@ jobs:
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@CHECKOUT_SHA
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Install verified Gitleaks
+        env:
+          GITLEAKS_VERSION: "8.30.1"
+          GITLEAKS_SHA256: "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+        run: |
+          set -euo pipefail
+
+          ASSET="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          URL="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${ASSET}"
+
+          WORK_DIR=$(mktemp -d)
+          cd "$WORK_DIR"
+
+          curl --fail --silent --show-error \
+            --location "$URL" \
+            --output "$ASSET"
+
+          printf '%s  %s\n' \
+            "$GITLEAKS_SHA256" "$ASSET" \
+            | sha256sum --check -
+
+          tar -xzf "$ASSET" gitleaks
+
+          mkdir -p "$HOME/.local/bin"
+
+          install -m 0755 gitleaks \
+            "$HOME/.local/bin/gitleaks"
+
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Scan Git history for secrets
+        run: |
+          gitleaks version
+          gitleaks git . \
+            --log-opts="--all" \
+            --redact=100 \
+            --exit-code=1 \
+            --no-banner
+
       - name: Set up Python
-        uses: actions/setup-python@SETUP_PYTHON_SHA
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version-file: .python-version
 
@@ -66,4 +105,3 @@ jobs:
       - name: Audit development dependencies
         run: |
           python -m pip_audit -r requirements-dev.txt
-
