@@ -13,67 +13,47 @@ class GitHubClient:
         self.config = config
         self.session = requests.Session()
 
-        self.session.headers.update({
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": self.API_VERSION
-        })
+        self.session.headers.update(
+            {
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": self.API_VERSION,
+            }
+        )
 
     def generate_jwt(self):
-        key_path = Path(
-            self.config["private_key_path"]
-        ).expanduser()
+        key_path = Path(self.config["private_key_path"]).expanduser()
 
         private_key = key_path.read_text()
         now = int(time.time())
 
-        payload = {
-            "iat": now - 60,
-            "exp": now + 540,
-            "iss": self.config["app_id"]
-        }
+        payload = {"iat": now - 60, "exp": now + 540, "iss": self.config["app_id"]}
 
-        return jwt.encode(
-            payload,
-            private_key,
-            algorithm="RS256"
-        )
+        return jwt.encode(payload, private_key, algorithm="RS256")
 
     def authenticate(self):
         signed_jwt = self.generate_jwt()
         installation_id = self.config["installation_id"]
 
-        url = (
-            f"{self.BASE_URL}/app/installations/"
-            f"{installation_id}/access_tokens"
-        )
+        url = f"{self.BASE_URL}/app/installations/{installation_id}/access_tokens"
 
         response = self.session.post(
             url,
-            headers={
-                "Authorization": f"Bearer {signed_jwt}"
-            },
-            json={
-                "permissions": {
-                    "organization_administration": "read"
-                }
-            },
-            timeout=30
+            headers={"Authorization": f"Bearer {signed_jwt}"},
+            json={"permissions": {"organization_administration": "read"}},
+            timeout=30,
         )
 
         response.raise_for_status()
 
         data = response.json()
 
-        self.session.headers.update({
-            "Authorization": f"Bearer {data['token']}"
-        })
+        self.session.headers.update({"Authorization": f"Bearer {data['token']}"})
 
         return data["expires_at"]
 
     def get(self, endpoint):
         response = self.session.get(
-            f"{self.BASE_URL}/{endpoint.lstrip('/')}",
-            timeout=30
+            f"{self.BASE_URL}/{endpoint.lstrip('/')}", timeout=30
         )
 
         response.raise_for_status()
@@ -82,4 +62,3 @@ class GitHubClient:
 
     def close(self):
         self.session.close()
-

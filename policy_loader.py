@@ -27,21 +27,12 @@ def load_policy(path):
         "source",
         "field",
         "expected",
-        "severity"
+        "severity",
     }
 
-    allowed_sources = {
-        "organization",
-        "actions",
-        "workflow"
-    }
+    allowed_sources = {"organization", "actions", "workflow"}
 
-    allowed_severities = {
-        "critical",
-        "high",
-        "medium",
-        "low"
-    }
+    allowed_severities = {"critical", "high", "medium", "low"}
 
     seen_ids = set()
 
@@ -64,4 +55,3 @@ def load_policy(path):
         seen_ids.add(control["id"])
 
     return policy
-
