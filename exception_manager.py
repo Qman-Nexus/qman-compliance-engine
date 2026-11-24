@@ -16,7 +16,7 @@ def load_exceptions(path):
         registry = yaml.safe_load(file)
 
     if not isinstance(registry, dict):
-        raise ValueError("Invalid exception registry")
+        raise TypeError("Invalid exception registry")
 
     if registry.get("schema_version") != "1.0":
         raise ValueError("Unsupported exception schema")
@@ -24,7 +24,7 @@ def load_exceptions(path):
     exceptions = registry.get("exceptions")
 
     if not isinstance(exceptions, list):
-        raise ValueError("Invalid exceptions list")
+        raise TypeError("Invalid exceptions list")
 
     return exceptions
 
